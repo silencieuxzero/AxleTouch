@@ -2,26 +2,58 @@
 
 
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg) 
-![Python](https://img.shields.io/badge/Python-3.7%2B-blue) 
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue) 
 
 
-一个轻量化桌宠 正于开发阶段
+一个轻量化桌宠，基于 PyQt5 实现。  
+桌面宠物会贴边吸附，单击弹出输入框，支持与 AI 对话并展示气泡回复。
 
+## 功能
 
-## 运行
+- **贴边吸附** — 拖拽后自动吸附到屏幕左/右侧
+- **AI 对话** — 单击桌宠弹出输入框，AI 回复以气泡形式展示
+- **定时问候** — 定时获取当前窗口状态并主动发起对话
+- **图片识别** — 拖拽图片到输入框可发送图片进行识别
+- **多模型支持** — 支持以下 AI 厂商：
+  - **阶跃星辰** (`step-3.7-flash`)
+  - **阿里百炼** (`qwen-turbo`)
+  - **DeepSeek** (`deepseek-chat`)
+- **右键菜单** — 右键桌宠可打开 GUI 设置或退出程序
+
+## 快速开始
+
 ```bash
-python main.py
+# 1. 安装依赖
+uv sync
+
+# 2. 运行
+uv run axle-touch
+
+# 首次启动会自动生成 config.toml
+# 右键桌宠 → 配置文件设置，选择厂商并填入 API Key
 ```
 
-exe包体即将推出......
+## 配置文件
 
+首次启动自动生成 `config.toml`，也可通过 GUI 设置界面修改：
+
+```toml
+provider = "stepfun"
+api_key = ""
+```
+
+| 厂商 | provider 值 | 获取 API Key |
+|------|-------------|-------------|
+| 阶跃星辰 | `stepfun` | [platform.stepfun.com](https://platform.stepfun.com) |
+| 阿里百炼 | `bailian` | [bailian.console.aliyun.com](https://bailian.console.aliyun.com) |
+| DeepSeek | `deepseek` | [platform.deepseek.com](https://platform.deepseek.com) |
 
 ## 依赖
 
-- Python 3.7+
+- Python 3.8+
 - PyQt5
 
-
 ## 许可证
+
 本项目基于 **GNU General Public License v3** 开源。  
 详见 [LICENSE](LICENSE) 文件。
