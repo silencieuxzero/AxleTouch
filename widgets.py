@@ -344,6 +344,44 @@ PROVIDER_OPTIONS = [
     ("deepseek", "DeepSeek"),
 ]
 
+INPUT_STYLE = """
+    QLineEdit {
+        border: 1px solid #ebedf1;
+        border-radius: 6px; padding: 4px 8px;
+        background: white; color: #1e2026; font-size: 12px;
+    }
+    QLineEdit:focus { border-color: #5078f0; }
+"""
+
+SPIN_STYLE = """
+    QSpinBox {
+        border: 1px solid #ebedf1;
+        border-radius: 6px; padding: 4px 8px;
+        background: white; color: #1e2026; font-size: 12px;
+        min-width: 60px;
+    }
+"""
+
+COMBO_STYLE = """
+    QComboBox {
+        border: 1px solid #ebedf1;
+        border-radius: 6px; padding: 4px 8px;
+        background: white; color: #1e2026; font-size: 12px;
+    }
+    QComboBox::drop-down { border: none; }
+"""
+
+BTN_STYLE = """
+    QPushButton {
+        background: transparent; color: #787d88;
+        border: 1px solid #787d88;
+        border-radius: 6px; padding: 6px 14px;
+        font-size: 12px; font-weight: bold;
+    }
+    QPushButton:hover { background: #ebf0ff; }
+"""
+
+LABEL_STYLE = "color: #787d88; font-size: 16px;"
 
 class SettingsDialog(QDialog):
     config_saved = pyqtSignal(dict)
@@ -365,6 +403,7 @@ class SettingsDialog(QDialog):
         form = QFormLayout()
 
         self._provider_combo = QComboBox(self)
+        self._provider_combo.setStyleSheet(COMBO_STYLE)
         for pid, pname in PROVIDER_OPTIONS:
             self._provider_combo.addItem(pname, pid)
         current_provider = self._config.get("provider", "stepfun")
@@ -372,27 +411,31 @@ class SettingsDialog(QDialog):
         if idx >= 0:
             self._provider_combo.setCurrentIndex(idx)
         self._provider_combo.currentIndexChanged.connect(self._on_provider_changed)
-        form.addRow("模型厂商:", self._provider_combo)
+        form.addRow(self._label("模型厂商:"), self._provider_combo)
 
         self._api_key_edit = QLineEdit(self._config.get("api_key", ""))
+        self._api_key_edit.setStyleSheet(INPUT_STYLE)
         self._api_key_edit.setPlaceholderText("输入 API Key")
-        form.addRow("API Key:", self._api_key_edit)
+        form.addRow(self._label("API Key:"), self._api_key_edit)
 
         self._icon_size_spin = QSpinBox(self)
+        self._icon_size_spin.setStyleSheet(SPIN_STYLE)
         self._icon_size_spin.setRange(50, 300)
         self._icon_size_spin.setValue(self._config.get("icon_size", 100))
         self._icon_size_spin.setSuffix(" px")
-        form.addRow("图标大小:", self._icon_size_spin)
+        form.addRow(self._label("图标大小:"), self._icon_size_spin)
 
         self._popup_width_spin = QSpinBox(self)
+        self._popup_width_spin.setStyleSheet(SPIN_STYLE)
         self._popup_width_spin.setRange(200, 800)
         self._popup_width_spin.setValue(self._config.get("popup_width", 420))
         self._popup_width_spin.setSuffix(" px")
-        form.addRow("输入框宽度:", self._popup_width_spin)
+        form.addRow(self._label("输入框宽度:"), self._popup_width_spin)
 
         layout.addLayout(form)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.setStyleSheet(BTN_STYLE)
         buttons.accepted.connect(self._on_save)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
@@ -421,6 +464,14 @@ class SettingsDialog(QDialog):
             pass
         self.config_saved.emit(self._config)
         self.accept()
+
+    @staticmethod
+    def _label(text):
+        lbl = QLabel(text)
+        lbl.setStyleSheet(LABEL_STYLE)
+        return lbl
+
+
 
 
 class EdgeFloatingBlock(QWidget):
