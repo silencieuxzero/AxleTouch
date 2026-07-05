@@ -6,7 +6,9 @@ from pathlib import Path
 import base64
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                              QLineEdit, QPushButton, QLabel, QApplication)
+                              QLineEdit, QPushButton, QLabel, QApplication,
+                              QMenu, QAction, QDialog, QFormLayout,
+                              QDialogButtonBox, QComboBox, QSpinBox)
 from PyQt5.QtCore import (Qt, QPoint, QRectF, QPropertyAnimation,
                            QEasingCurve, QTimer, pyqtSignal, QElapsedTimer)
 from PyQt5.QtGui import (QPainter, QBrush, QColor, QPen, QPainterPath,
@@ -312,6 +314,10 @@ class InputPopup(QWidget):
         self.hide()
         self._edit.clear()
 
+    def apply_config(self, config):
+        width = config.get("popup_width", 420)
+        self.setFixedWidth(width)
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()  
@@ -329,6 +335,92 @@ class InputPopup(QWidget):
                 self.not_image.emit()
 
 
+
+
+# 厂商列表（id, 显示名）
+PROVIDER_OPTIONS = [
+    ("stepfun", "阶跃星辰"),
+    ("bailian", "阿里百炼"),
+    ("deepseek", "DeepSeek"),
+]
+
+
+class SettingsDialog(QDialog):
+    config_saved = pyqtSignal(dict)
+
+    def __init__(self, config, parent=None):
+        super().__init__(parent)
+        self._config = config.copy()
+        self.setWindowTitle("设置")
+        self.setFixedSize(420, 300)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        self.setAttribute(Qt.WA_TranslucentBackground, False)
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+
+        form = QFormLayout()
+
+        self._provider_combo = QComboBox(self)
+        for pid, pname in PROVIDER_OPTIONS:
+            self._provider_combo.addItem(pname, pid)
+        current_provider = self._config.get("provider", "stepfun")
+        idx = self._provider_combo.findData(current_provider)
+        if idx >= 0:
+            self._provider_combo.setCurrentIndex(idx)
+        self._provider_combo.currentIndexChanged.connect(self._on_provider_changed)
+        form.addRow("模型厂商:", self._provider_combo)
+
+        self._api_key_edit = QLineEdit(self._config.get("api_key", ""))
+        self._api_key_edit.setPlaceholderText("输入 API Key")
+        form.addRow("API Key:", self._api_key_edit)
+
+        self._icon_size_spin = QSpinBox(self)
+        self._icon_size_spin.setRange(50, 300)
+        self._icon_size_spin.setValue(self._config.get("icon_size", 100))
+        self._icon_size_spin.setSuffix(" px")
+        form.addRow("图标大小:", self._icon_size_spin)
+
+        self._popup_width_spin = QSpinBox(self)
+        self._popup_width_spin.setRange(200, 800)
+        self._popup_width_spin.setValue(self._config.get("popup_width", 420))
+        self._popup_width_spin.setSuffix(" px")
+        form.addRow("输入框宽度:", self._popup_width_spin)
+
+        layout.addLayout(form)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self._on_save)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def _on_provider_changed(self, idx):
+        pname = self._provider_combo.currentText()
+        self._api_key_edit.setPlaceholderText(f"输入 {pname} API Key")
+
+    def _on_save(self):
+        provider = self._provider_combo.currentData()
+        api_key = self._api_key_edit.text().strip()
+        icon_size = self._icon_size_spin.value()
+        popup_width = self._popup_width_spin.value()
+        self._config["provider"] = provider
+        self._config["api_key"] = api_key
+        self._config["icon_size"] = icon_size
+        self._config["popup_width"] = popup_width
+        cfg_path = os.path.join(current_dir, "config.toml")
+        try:
+            with open(cfg_path, "w", encoding="utf-8") as f:
+                f.write(f'provider = "{provider}"\n')
+                f.write(f'api_key = "{api_key}"\n')
+                f.write(f'icon_size = {icon_size}\n')
+                f.write(f'popup_width = {popup_width}\n')
+        except Exception:
+            pass
+        self.config_saved.emit(self._config)
+        self.accept()
 
 
 class EdgeFloatingBlock(QWidget):
@@ -370,6 +462,7 @@ class EdgeFloatingBlock(QWidget):
                                    Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self._ai = None
+        self._config = None
 
         self._periodic_timer = QTimer(self)
         self._periodic_timer.setSingleShot(True)
@@ -377,10 +470,29 @@ class EdgeFloatingBlock(QWidget):
 
         self.init_ui()
 
-    def set_ai_client(self, client):
+    def set_ai_client(self, client, config=None):
         self._ai = client
+        self._config = config or {}
         self._ai.response_ready.connect(self._on_ai_response)
+        self._apply_size_config()
         self._schedule_next_periodic()
+
+    def _apply_size_config(self):
+        icon_size = self._config.get("icon_size", 100)
+        self.collapsed_size = icon_size
+        self.resize(icon_size, icon_size)
+
+        pixmap = QPixmap(image_path)
+        self.image = pixmap.scaled(int(icon_size * 7.2), int(icon_size * 7.2),
+                                   Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        self._input_popup.apply_config(self._config)
+
+        screen = QApplication.primaryScreen().geometry()
+        if self._edge_side == 'left':
+            self.move(0, self.y())
+        else:
+            self.move(screen.width() - icon_size, self.y())
 
     def _schedule_next_periodic(self):
         interval_ms = random.randint(30, 100) * 1000
@@ -432,11 +544,11 @@ class EdgeFloatingBlock(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        self.resize(100, 100)
-
         screen = QApplication.primaryScreen().geometry()
-        cy = (screen.height() - 100) // 2
-        self.move(screen.width() - 100, cy)
+        default_size = self.collapsed_size
+        self.resize(default_size, default_size)
+        cy = (screen.height() - default_size) // 2
+        self.move(screen.width() - default_size, cy)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -459,7 +571,7 @@ class EdgeFloatingBlock(QWidget):
         if self._edge_side == 'left':
             target = QPoint(0, cur_y)
         else:
-            target = QPoint(screen.width() - 100, cur_y)
+            target = QPoint(screen.width() - self.width(), cur_y)
 
         anim.setStartValue(self.pos())
         anim.setEndValue(target)
@@ -509,6 +621,52 @@ class EdgeFloatingBlock(QWidget):
         self._is_dragging = False
         self._press_pos = None
         self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #fbfbfd;
+                border: 1px solid #e0e2e8;
+                border-radius: 8px;
+                padding: 4px;
+            }
+            QMenu::item {
+                padding: 6px 24px;
+                border-radius: 4px;
+                font-size: 13px;
+            }
+            QMenu::item:selected {
+                background: #4a90d9;
+                color: white;
+            }
+        """)
+
+        settings_action = QAction("配置文件设置", self)
+        settings_action.triggered.connect(self._open_settings)
+        menu.addAction(settings_action)
+
+        menu.addSeparator()
+
+        exit_action = QAction("退出", self)
+        exit_action.triggered.connect(QApplication.quit)
+        menu.addAction(exit_action)
+
+        menu.exec_(event.globalPos())
+
+    def _open_settings(self):
+        dialog = SettingsDialog(self._config or {}, self)
+        dialog.config_saved.connect(self._on_config_saved)
+        dialog.exec_()
+
+    def _on_config_saved(self, config):
+        self._config = config
+        self._apply_size_config()
+        if self._ai:
+            self._ai.update(
+                config.get("provider", "stepfun"),
+                config.get("api_key", ""),
+            )
 
     def _card_rect(self):
         return QRectF(15, 15, self.width() - 30, self.height() - 30)
