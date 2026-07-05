@@ -48,13 +48,14 @@ def load_config():
                 "api_key": data.get("api_key", ""),
                 "icon_size": data.get("icon_size", 100),
                 "popup_width": data.get("popup_width", 420),
+                "prompt": data.get("prompt","以下是你的设定:你是雨竹，一个猫娘，你的主要任务是像一个贴心的女儿(不是真的女儿，不要叫用户父亲)一样撒娇.语气请带撒娇，可爱，温柔，可使用ww，~，（不是，哇~，等词汇(可多使用'~')每句话尽量控制在25字以内。不要过多使用emoji。语言模式不要过于AI，不要过多热情。以下是用户的一些状态：")
             }
     except FileNotFoundError:
-        default = {"provider": "stepfun", "api_key": "", "icon_size": 100, "popup_width": 420}
+        default = {"provider": "stepfun", "api_key": "", "icon_size": 100, "popup_width": 420,"prompt": "以下是你的设定:你是雨竹，一个猫娘，你的主要任务是像一个贴心的女儿(不是真的女儿，不要叫用户父亲)一样撒娇.语气请带撒娇，可爱，温柔，可使用ww，~，（不是，哇~，等词汇(可多使用'~')每句话尽量控制在25字以内。不要过多使用emoji。语言模式不要过于AI，不要过多热情。以下是用户的一些状态："}
         _save_config(default)
         return default
     except Exception:
-        return {"provider": "stepfun", "api_key": "", "icon_size": 100, "popup_width": 420}
+        return {"provider": "stepfun", "api_key": "", "icon_size": 100, "popup_width": 420,"prompt": "以下是你的设定:你是雨竹，一个猫娘，你的主要任务是像一个贴心的女儿(不是真的女儿，不要叫用户父亲)一样撒娇.语气请带撒娇，可爱，温柔，可使用ww，~，（不是，哇~，等词汇(可多使用'~')每句话尽量控制在25字以内。不要过多使用emoji。语言模式不要过于AI，不要过多热情。以下是用户的一些状态："}
 
 
 def _save_config(cfg):
@@ -65,6 +66,7 @@ def _save_config(cfg):
             f.write(f'api_key = "{cfg.get("api_key", "")}"\n')
             f.write(f'icon_size = {cfg.get("icon_size", 100)}\n')
             f.write(f'popup_width = {cfg.get("popup_width", 420)}\n')
+            f.write(f'prompt = "{cfg.get("prompt", "以下是你的设定:你是雨竹，一个猫娘，你的主要任务是像一个贴心的女儿(不是真的女儿，不要叫用户父亲)一样撒娇.语气请带撒娇，可爱，温柔，可使用ww，~，（不是，哇~，等词汇(可多使用'~')每句话尽量控制在25字以内。不要过多使用emoji。语言模式不要过于AI，不要过多热情。以下是用户的一些状态：")}"\n')
     except Exception:
         pass
 
@@ -152,7 +154,7 @@ def main():
 
     config = load_config()
     ai = AIClient(config.get("provider", "stepfun"), config.get("api_key", ""))
-    ai.set_system_prompt(window.SYSTEM_PROMPT)
+    ai.set_system_prompt(config.get("prompt","以下是你的设定:你是雨竹，一个猫娘，你的主要任务是像一个贴心的女儿(不是真的女儿，不要叫用户父亲)一样撒娇.语气请带撒娇，可爱，温柔，可使用ww，~，（不是，哇~，等词汇(可多使用'~')每句话尽量控制在25字以内。不要过多使用emoji。语言模式不要过于AI，不要过多热情。以下是用户的一些状态："))
     window.set_ai_client(ai, config)
 
     window.show()

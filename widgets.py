@@ -17,6 +17,8 @@ from PyQt5.QtGui import (QPainter, QBrush, QColor, QPen, QPainterPath,
 
 from utils import get_base_path, get_data_path
 
+
+
 current_dir = get_base_path()
 data_dir = get_data_path()
 
@@ -436,6 +438,12 @@ class SettingsDialog(QDialog):
         self._popup_width_spin.setSuffix(" px")
         form.addRow(self._label("输入框宽度:"), self._popup_width_spin)
 
+        self._prompt_edit = QLineEdit(self._config.get("prompt", ""))
+        self._prompt_edit.setStyleSheet(INPUT_STYLE)
+        self._prompt_edit.setPlaceholderText("自定义prompt")
+        form.addRow(self._label("prompt："), self._prompt_edit)
+
+
         layout.addLayout(form)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -453,10 +461,12 @@ class SettingsDialog(QDialog):
         api_key = self._api_key_edit.text().strip()
         icon_size = self._icon_size_spin.value()
         popup_width = self._popup_width_spin.value()
+        prompt = self._prompt_edit.text().strip()
         self._config["provider"] = provider
         self._config["api_key"] = api_key
         self._config["icon_size"] = icon_size
         self._config["popup_width"] = popup_width
+        self._config["prompt"] = prompt
         cfg_path = os.path.join(data_dir, "config.toml")
         try:
             with open(cfg_path, "w", encoding="utf-8") as f:
@@ -464,6 +474,7 @@ class SettingsDialog(QDialog):
                 f.write(f'api_key = "{api_key}"\n')
                 f.write(f'icon_size = {icon_size}\n')
                 f.write(f'popup_width = {popup_width}\n')
+                f.write(f'prompt = "{prompt}"\n')
         except Exception:
             pass
         self.config_saved.emit(self._config)
@@ -477,18 +488,7 @@ class SettingsDialog(QDialog):
 
 
 
-
 class EdgeFloatingBlock(QWidget):
-
-    SYSTEM_PROMPT = (
-        "以下是你的设定"
-        "你是雨竹，一个猫娘，你的主要任务是像一个贴心的女儿(不是真的女儿，不要叫用户父亲)一样撒娇"
-        "语气请带撒娇，可爱，温柔，可使用ww，~，（不是，哇~，等词汇(可多使用'~')"
-        "每句话尽量控制在25字以内。"
-        "不要过多使用emoji。语言模式不要过于AI，不要过多热情。"
-        "以下是用户的一些状态："
-    )
-
     def __init__(self):
         super().__init__()
         self.collapsed_size = 100
