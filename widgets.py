@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import sys
 from pathlib import Path
-from config_manager import save_config
+from config_manager import save_config,load_config
 import base64
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
@@ -212,6 +212,7 @@ class InputPopup(QWidget):
     submitted = pyqtSignal(str)
     image = pyqtSignal(str)
     not_image = pyqtSignal()
+    no_vlm = pyqtSignal()
 
     def __init__(self, parent_floating):
         super().__init__()
@@ -329,6 +330,9 @@ class InputPopup(QWidget):
             event.acceptProposedAction()  
 
     def dropEvent(self, event):
+        config = load_config()
+        if config.get("provider") == "stepfun":
+            self.no_vlm.emit()
         urls = event.mimeData().urls()
         if urls:
             file_path = urls[0].toLocalFile()
@@ -499,6 +503,7 @@ class EdgeFloatingBlock(QWidget):
         self._input_popup.submitted.connect(self._on_input_submitted)
         self._input_popup.not_image.connect(self._not_image)
         self._input_popup.image.connect(self._image)
+        self._input_popup.no_vlm.connect(self._no_vlm)
         
 
 
@@ -766,6 +771,9 @@ class EdgeFloatingBlock(QWidget):
 
     def _not_image(self):
         self._content_bar.show_content("不是图片文件，拖进来也没用ww")
+
+    def _no_vlm(self):
+        self._content_bar.show_content("没有VLM API哦，请使用StepFun API或等待下版本对其他VLM的支持。")
 
     def _image(self,data):
         print(" -----[ user input ]----- ", "\n",
