@@ -331,7 +331,7 @@ class InputPopup(QWidget):
 
     def dropEvent(self, event):
         config = load_config()
-        if config.get("provider") == "stepfun":
+        if config.get("provider") != "stepfun":
             self.no_vlm.emit()
         urls = event.mimeData().urls()
         if urls:
