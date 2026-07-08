@@ -1,0 +1,39 @@
+import ctypes
+import os
+from datetime import datetime
+from utils import get_data_path
+import json
+
+data_dir = get_data_path()
+
+def get_active_window_title():
+    try:
+        hwnd = ctypes.windll.user32.GetForegroundWindow()
+        length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+        buf = ctypes.create_unicode_buffer(length + 1)
+        ctypes.windll.user32.GetWindowTextW(hwnd, buf, length + 1)
+        return buf.value if buf.value else "（无标题）"
+    except Exception:
+        return "（未知窗口）"
+
+
+def _log_to_json(text):
+    log_path = os.path.join(data_dir, "chat_log.json")
+    entry = {
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "content": text
+    }
+    try:
+        if os.path.exists(log_path):
+            with open(log_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        else:
+            data = []
+    except Exception:
+        data = []
+    data.append(entry)
+    try:
+        with open(log_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass

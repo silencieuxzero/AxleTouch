@@ -17,6 +17,7 @@ from PyQt5.QtGui import (QPainter, QBrush, QColor, QPen, QPainterPath,
 
 from utils import get_base_path, get_data_path
 
+from tools import _log_to_json
 
 
 current_dir = get_base_path()
@@ -551,7 +552,7 @@ class EdgeFloatingBlock(QWidget):
         self._periodic_timer.start(interval_ms)
 
     def _periodic_trigger(self):
-        from main import get_active_window_title
+        from tools import get_active_window_title
         window_title = get_active_window_title()
         now = datetime.now().strftime("%H:%M")
         status = f"当前时间: {now}，用户正在使用: {window_title}"
@@ -564,7 +565,7 @@ class EdgeFloatingBlock(QWidget):
         self._content_bar.show_content(text)
         print("[", datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "]", "\n",
               "雨竹：", "\"", text, "\"", "\n")
-        self._log_to_json(text)
+        _log_to_json(text)
 
     def _on_input_submitted(self, text):
         print(" -----[ user input ]----- ", "\n",
@@ -572,25 +573,6 @@ class EdgeFloatingBlock(QWidget):
               "\"", text, "\"")
         if self._ai:
             self._ai.send_message(text)
-
-    def _log_to_json(self, text):
-        import json
-        log_path = os.path.join(data_dir, "chat_log.json")
-        entry = {
-            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "content": text
-        }
-        try:
-            if os.path.exists(log_path):
-                with open(log_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            else:
-                data = []
-            data.append(entry)
-            with open(log_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
 
     def init_ui(self):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
