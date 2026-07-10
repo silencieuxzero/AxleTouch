@@ -50,3 +50,4 @@ def _log_to_json(text):
             json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception:
         pass
+
