@@ -5,6 +5,9 @@ import json
 import sys
 import os
 
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QPixmap
+
 
 def get_base_path():
     if getattr(sys, 'frozen', False):
@@ -51,3 +54,7 @@ def _log_to_json(text):
     except Exception:
         pass
 
+
+def capture_screen():
+    screen = QApplication.primaryScreen()
+    return screen.grabWindow(0)

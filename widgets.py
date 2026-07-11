@@ -13,11 +13,11 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                               QMenu, QAction, QDialog, QFormLayout,
                               QDialogButtonBox, QComboBox, QSpinBox)
 from PyQt5.QtCore import (Qt, QPoint, QRectF, QPropertyAnimation,
-                           QEasingCurve, QTimer, pyqtSignal, QElapsedTimer)
+                           QEasingCurve, QTimer, pyqtSignal, QElapsedTimer,QBuffer)
 from PyQt5.QtGui import (QPainter, QBrush, QColor, QPen, QPainterPath,
                           QRegion, QCursor, QFontMetrics, QPixmap)
 
-from tools import _log_to_json,get_base_path, get_data_path
+from tools import _log_to_json,get_base_path, get_data_path,capture_screen
 
 
 current_dir = get_base_path()
@@ -672,9 +672,9 @@ class EdgeFloatingBlock(QWidget):
 
         menu.addSeparator()
 
-        rua_action = QAction("rua", self)
-        rua_action.triggered.connect(self._rua)
-        menu.addAction(rua_action)
+        capture_action = QAction("让雨竹看看！", self)
+        capture_action.triggered.connect(self._capture)
+        menu.addAction(capture_action)
 
         menu.addSeparator()
 
@@ -689,8 +689,33 @@ class EdgeFloatingBlock(QWidget):
         dialog.config_saved.connect(self._on_config_saved)
         dialog.exec_()
 
-    def _rua(self):
-        self._content_bar.show_content("ww 好舒服")
+    def _capture(self):
+        try:
+            pixmap = capture_screen()
+        except Exception:
+            print("截图失败：无法获取屏幕图像")
+            return
+
+        if pixmap.isNull():
+            print("截图失败：获取的图像无效")
+            return
+        
+        buffer = QBuffer()
+        buffer.open(QBuffer.ReadWrite)
+        pixmap = pixmap.scaled(1280, 720, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap.save(buffer, "PNG")
+        data = buffer.data().toBase64().data().decode()
+        image_url = f"data:image/png;base64,{data}"
+        #此处不复用_image其实是有说法的 image发送路径的可自定义性太低。
+        print(" -----[ Action ]----- ", "\n",
+              "[", datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "]", "\n",
+              "\"", "雨竹看了一眼你的屏幕", "\"")
+        _data = [
+            {"type": "text", "text": "这是用户桌面截图。"},
+            {"type": "image_url", "image_url": {"url": image_url, "detail": "high"}}
+        ]
+        if self._ai:
+            self._ai.send_message(_data)
 
     def _on_config_saved(self, config):
         self._config = config
