@@ -3,11 +3,8 @@ import os
 from datetime import datetime
 import json
 import sys
-import os
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QPixmap
-
 
 def get_base_path():
     if getattr(sys, 'frozen', False):
