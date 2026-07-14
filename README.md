@@ -110,6 +110,328 @@ python main.py
 
 ---
 
+## 📦 打包指南
+
+将项目打包为独立的 `.exe` 可执行文件，方便在未安装 Python 的 Windows 系统上直接运行。
+
+### 环境要求
+
+| 项目 | 要求 |
+|------|------|
+| 操作系统 | Windows 10/11（64 位） |
+| Python | 3.8 ~ 3.14（推荐 3.10+） |
+| 打包工具 | [PyInstaller](https://pyinstaller.org/) >= 6.0 |
+| 包管理器 | [uv](https://docs.astral.sh/uv/)（推荐）或 pip |
+| 磁盘空间 | 至少 2GB 可用空间（用于缓存和临时文件） |
+
+### 安装打包工具
+
+```bash
+# 方式一：使用 uv（推荐，项目已预置 dev 依赖）
+uv sync --group dev
+
+# 方式二：使用 pip
+pip install pyinstaller
+```
+
+### 打包前的准备工作
+
+1. **确认所有依赖已安装**：
+
+   ```bash
+   uv sync --system-certs
+   ```
+
+2. **确保代码可正常运行**：
+
+   ```bash
+   uv run axle-touch
+   ```
+
+3. **检查资源文件完整性**：确认 `assets/` 目录下存在 `icon.ico`、`image.svg`、`image1.jpg`。
+
+4. **清理缓存**（可选，可减少打包体积）：
+
+   ```bash
+   # 清理 Python 缓存文件
+   Remove-Item -Recurse -Force __pycache__ -ErrorAction SilentlyContinue
+   Get-ChildItem -Recurse -Filter __pycache__ | Remove-Item -Recurse -Force
+   ```
+
+### 完整打包命令
+
+#### 生产环境打包（推荐）
+
+生成单文件 exe，隐藏控制台窗口，适合分发给最终用户：
+
+```powershell
+pyinstaller --onefile --windowed --noconfirm --clean `
+  --name AxleTouch `
+  --icon assets/icon.ico `
+  --add-data "assets;assets" `
+  --hidden-import pyttsx3 `
+  --hidden-import ctypes `
+  --exclude-module PyQt5.QtWebEngineWidgets `
+  --exclude-module PyQt5.QtWebEngine `
+  --exclude-module PyQt5.QtBluetooth `
+  --exclude-module PyQt5.QtNfc `
+  --exclude-module PyQt5.QtPositioning `
+  --exclude-module PyQt5.QtMultimedia `
+  --exclude-module PyQt5.QtSensors `
+  --exclude-module PyQt5.QtXmlPatterns `
+  --exclude-module PyQt5.QtQuick `
+  --exclude-module PyQt5.QtQml `
+  --exclude-module PyQt5.QtDesigner `
+  --exclude-module PyQt5.QtHelp `
+  --exclude-module PyQt5.QtTest `
+  --exclude-module PyQt5.QtSql `
+  --exclude-module PyQt5.QtPrintSupport `
+  --exclude-module numpy `
+  --exclude-module pandas `
+  --exclude-module matplotlib `
+  --exclude-module scipy `
+  --exclude-module IPython `
+  --exclude-module PIL `
+  --exclude-module tkinter `
+  --exclude-module unittest `
+  --exclude-module pytest `
+  --exclude-module setuptools `
+  --exclude-module pip `
+  --exclude-module cryptography `
+  --exclude-module lxml `
+  main.py
+```
+
+> **注意**：以上命令在 PowerShell 中执行。如果使用 CMD，请将行尾的反引号（`` ` ``）替换为脱字符（`^`），或将所有参数写在同一行。
+
+#### 开发环境打包（带控制台）
+
+生成带控制台窗口的 exe，便于调试和查看日志输出：
+
+```powershell
+pyinstaller --onefile --noconfirm --clean `
+  --name AxleTouch_Debug `
+  --icon assets/icon.ico `
+  --add-data "assets;assets" `
+  --hidden-import pyttsx3 `
+  --hidden-import ctypes `
+  --exclude-module PyQt5.QtWebEngineWidgets `
+  --exclude-module PyQt5.QtWebEngine `
+  --exclude-module PyQt5.QtBluetooth `
+  --exclude-module PyQt5.QtNfc `
+  --exclude-module PyQt5.QtPositioning `
+  --exclude-module PyQt5.QtMultimedia `
+  --exclude-module PyQt5.QtSensors `
+  --exclude-module PyQt5.QtXmlPatterns `
+  --exclude-module PyQt5.QtQuick `
+  --exclude-module PyQt5.QtQml `
+  --exclude-module PyQt5.QtDesigner `
+  --exclude-module PyQt5.QtHelp `
+  --exclude-module PyQt5.QtTest `
+  --exclude-module PyQt5.QtSql `
+  --exclude-module PyQt5.QtPrintSupport `
+  --exclude-module numpy `
+  --exclude-module pandas `
+  --exclude-module matplotlib `
+  --exclude-module scipy `
+  --exclude-module IPython `
+  --exclude-module PIL `
+  --exclude-module tkinter `
+  --exclude-module unittest `
+  --exclude-module pytest `
+  --exclude-module setuptools `
+  --exclude-module pip `
+  --exclude-module cryptography `
+  --exclude-module lxml `
+  main.py
+```
+
+#### 最小化打包（体积优先）
+
+仅保留核心功能，进一步排除 pyttsx3（TTS 离线引擎）：
+
+```powershell
+pyinstaller --onefile --windowed --noconfirm --clean `
+  --name AxleTouch_Min `
+  --icon assets/icon.ico `
+  --add-data "assets;assets" `
+  --hidden-import ctypes `
+  --exclude-module pyttsx3 `
+  --exclude-module PyQt5.QtWebEngineWidgets `
+  --exclude-module PyQt5.QtWebEngine `
+  --exclude-module PyQt5.QtBluetooth `
+  --exclude-module PyQt5.QtNfc `
+  --exclude-module PyQt5.QtPositioning `
+  --exclude-module PyQt5.QtMultimedia `
+  --exclude-module PyQt5.QtSensors `
+  --exclude-module PyQt5.QtXmlPatterns `
+  --exclude-module PyQt5.QtQuick `
+  --exclude-module PyQt5.QtQml `
+  --exclude-module PyQt5.QtDesigner `
+  --exclude-module PyQt5.QtHelp `
+  --exclude-module PyQt5.QtTest `
+  --exclude-module PyQt5.QtSql `
+  --exclude-module PyQt5.QtPrintSupport `
+  --exclude-module numpy `
+  --exclude-module pandas `
+  --exclude-module matplotlib `
+  --exclude-module scipy `
+  --exclude-module IPython `
+  --exclude-module PIL `
+  --exclude-module tkinter `
+  --exclude-module unittest `
+  --exclude-module pytest `
+  --exclude-module setuptools `
+  --exclude-module pip `
+  --exclude-module cryptography `
+  --exclude-module lxml `
+  main.py
+```
+
+### 打包参数说明
+
+| 参数 | 说明 |
+|------|------|
+| `--onefile` | 打包为单个 exe 文件 |
+| `--windowed` / `-w` | 隐藏控制台窗口（GUI 模式） |
+| `--noconfirm` | 覆盖输出目录时不提示确认 |
+| `--clean` | 打包前清理临时缓存 |
+| `--name` | 指定输出 exe 文件名 |
+| `--icon` | 指定 exe 图标文件 |
+| `--add-data "src;dst"` | 将资源文件夹嵌入 exe，分号前为源路径，分号后为目标路径 |
+| `--hidden-import` | 强制包含 PyInstaller 无法自动发现的模块 |
+| `--exclude-module` | 排除不需要的模块以减小体积 |
+| `--upx-dir` | 指定 [UPX](https://upx.github.io/) 压缩工具目录（可选，可进一步减小体积） |
+
+### 打包后文件目录结构
+
+```text
+AxleTouch/
+├── dist/                          # 打包输出目录
+│   └── AxleTouch.exe              # 最终生成的可执行文件（约 40~45 MB）
+├── build/                         # 打包中间文件（可安全删除）
+│   └── AxleTouch/
+│       ├── Analysis-00.toc
+│       ├── PYZ-00.pyz
+│       ├── base_library.zip
+│       └── ...
+├── AxleTouch.spec                 # PyInstaller 配置文件（可删除或保留用于后续构建）
+├── config.json                    # 首次运行时自动生成（与 exe 同目录）
+├── chat_log.json                  # 运行时自动生成（与 exe 同目录）
+└── ...
+```
+
+**运行时的文件结构**（exe 首次启动后）：
+
+```text
+AxleTouch.exe 所在目录/
+├── AxleTouch.exe                  # 主程序
+├── config.json                    # 配置文件（自动生成，包含 API Key 等设置）
+├── chat_log.json                  # 聊天日志（自动生成）
+└── _internal/                     # （仅非 --onefile 模式）依赖库目录
+```
+
+> 用户可直接将 `dist/AxleTouch.exe` 复制到任意目录运行，首次启动会自动在同级目录生成 `config.json`。
+
+### 注意事项
+
+1. **杀软误报**：单文件 exe 可能被部分杀毒软件误报为病毒。这是由于 PyInstaller 的打包特性（自解压 + 代码合并）导致的误判。如需解决：
+   - 提交至杀软厂商申诉白名单
+   - 或使用 `--key` 参数加密打包（需用户输入密钥运行）
+   - 或使用数字签名工具对 exe 进行签名
+
+2. **体积说明**：生成 exe 约 40~45 MB，其中 PyQt5 的 Qt 运行时库（DLL）占 ~30 MB，Python 解释器及标准库占 ~8 MB，项目代码和资源占 ~2 MB。这是 PyQt5 应用的正常体积范围。
+
+3. **Python 3.14 兼容性**：PyInstaller 6.x 已支持 Python 3.14，但某些第三方 hook 可能需要更新。如遇兼容问题，建议使用 Python 3.10 ~ 3.13。
+
+4. **资源路径**：
+   - 打包后，`get_base_path()` 返回 PyInstaller 解压临时目录（`sys._MEIPASS`）
+   - `get_data_path()` 返回 exe 所在目录
+   - 配置文件 `config.json` 和聊天日志 `chat_log.json` 存储在 exe 同级目录
+
+5. **API Key 安全**：`config.json` 以明文存储 API Key，请勿将生成的 `dist/` 目录或 `config.json` 上传至公开仓库。
+
+6. **增量构建**：如果仅修改了 Python 源代码，无需每次都 `--clean`，移除该参数可大幅缩短二次打包时间。
+
+7. **UPX 压缩**（可选）：下载 [UPX](https://upx.github.io/) 并解压后，使用 `--upx-dir` 参数指定路径，可将 exe 体积减小 10%~20%，但会增加启动解压时间。
+
+### 常见打包问题及解决方法
+
+#### Q1: 打包后 exe 启动报错 "Failed to execute script"
+
+**原因**：通常由缺少隐藏导入（hidden import）或资源文件路径错误导致。
+
+**解决方法**：
+1. 先在命令行中运行 exe 查看具体报错（使用不带 `--windowed` 的打包方式）：
+   ```bash
+   pyinstaller --onefile --name AxleTouch_Debug main.py
+   ```
+2. 根据报错信息添加对应的 `--hidden-import` 参数
+3. 检查 `--add-data` 中的资源路径是否正确（在打包环境中，`assets` 目录必须存在于项目根目录）
+
+#### Q2: 打包体积过大（超过 100MB）
+
+**原因**：未排除不必要的 PyQt5 模块或第三方库。
+
+**解决方法**：
+1. 检查是否遗漏了 `--exclude-module` 参数
+2. 确认是否包含了 PyQt5.QtWebEngine（该模块约 50MB+）
+3. 使用最小化打包方案（见上文）
+4. 检查是否存在不必要的 `site-packages` 依赖
+
+#### Q3: 打包后 TTS 功能异常
+
+**原因**：`pyttsx3` 可能未被正确包含，或缺少 Windows 音频依赖。
+
+**解决方法**：
+1. 确认打包命令中包含 `--hidden-import pyttsx3`
+2. 确保目标系统安装了音频输出设备
+3. 检查 `tts_manager.py` 中是否正确传递了 API Key
+4. 如使用在线 TTS（Qwen/Bailian），需确保目标系统可访问阿里百炼 API
+
+#### Q4: 打包后截图功能失效
+
+**原因**：截图功能依赖 `QApplication.primaryScreen()`，在无显示器的环境下（如远程桌面）可能不可用。
+
+**解决方法**：
+1. 确保在本地桌面环境运行，而非远程桌面或无 GUI 的终端
+2. 检查是否有其他程序独占屏幕资源
+
+#### Q5: 杀毒软件报毒或拦截
+
+**原因**：PyInstaller 打包的单文件 exe 包含自解压代码和行为特征与某些病毒相似。
+
+**解决方法**：
+1. 添加杀毒软件信任区/白名单
+2. 使用数字签名工具对 exe 进行签名
+3. 向杀毒厂商提交误报申诉
+4. 或上传至 [VirusTotal](https://www.virustotal.com/) 检查具体报毒引擎
+
+#### Q6: 打包报错 "UPX is not available"
+
+**原因**：系统未安装 UPX 压缩工具。
+
+**解决方法**：此错误仅为警告，不影响打包过程。可忽略，或下载 [UPX](https://upx.github.io/) 后通过 `--upx-dir` 指定路径。
+
+#### Q7: 打包后窗口无法贴边或位置异常
+
+**原因**：多显示器环境或屏幕分辨率获取异常。
+
+**解决方法**：
+- 确认 `QApplication.primaryScreen().geometry()` 正确返回屏幕尺寸
+- 在主显示器上运行，或在代码中添加多显示器支持
+
+#### Q8: 打包后 exe 可以在本机运行，但复制到其他电脑报错
+
+**原因**：目标系统缺少必要的 Visual C++ 运行库，或 Windows 版本过低。
+
+**解决方法**：
+1. 确保目标系统安装了 [Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)（2015-2022 版本）
+2. 目标系统需为 Windows 10 及以上版本
+3. 如果目标系统为 Windows 7，需使用 Python 3.8 打包并确保安装了相关补丁
+
+---
+
 ## 🚀 使用指南
 
 ### 基本操作
