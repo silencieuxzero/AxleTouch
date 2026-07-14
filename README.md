@@ -3,15 +3,15 @@
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 
-> **AxleTouch 增强版** — 更快更新节奏、更强功能体验的 AI 桌宠。
+> **AxleTouch 探索版（AxleTouch Explorer Edition）** — 更快更新节奏、更多功能体验的 AI 桌宠。
 
 ---
 
 ## 📖 项目简介
 
-AxleTouch 增强版是基于 **PyQt5** 开发的轻量级桌面宠物应用，核心角色为猫娘“雨竹”。她会以浮窗形式贴边吸附在屏幕侧边，用户单击即可唤出输入框与她对话，AI 回复以气泡形式展示。
+AxleTouch 探索版（AxleTouch Explorer Edition）是基于 **PyQt5** 开发的轻量级桌面宠物应用，核心角色为猫娘“雨竹”。她会以浮窗形式贴边吸附在屏幕侧边，用户单击即可唤出输入框与她对话，AI 回复以气泡形式展示。
 
-增强版在保持原有轻量特性的基础上，持续迭代更快的更新速度与更多新功能，包括多模型厂商接入、Web 搜索、屏幕截图分析、图片识别（多模态）、TTS 语音合成等，适合作为桌面助手或个人娱乐使用。
+探索版在保持原有轻量特性的基础上，持续迭代更快的更新速度与更多新功能，包括多模型厂商接入、Web 搜索、屏幕截图分析、图片识别（多模态）、TTS 语音合成等，适合作为桌面助手或个人娱乐使用。
 
 **技术栈**：Python 3.8+ / PyQt5 / QNetworkAccessManager / Tavily Search API
 
