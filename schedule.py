@@ -22,6 +22,6 @@ class Poller(QObject):
         window_title = get_active_window_title()
         now = datetime.now().strftime("%H:%M")
         status = f"当前时间: {now}，用户正在使用: {window_title}"
-        print(" -----[ scheduled polling results ]----- ")
+        print(f"[scheduled polling] {status}")
         self.status_ready.emit(status)
         self._schedule_next()

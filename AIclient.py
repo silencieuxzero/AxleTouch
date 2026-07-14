@@ -42,12 +42,26 @@ PROVIDER_CONFIGS = {
         "base_url": "https://api.deepseek.com/v1",
         "default_model": "deepseek-chat",
     },
+    "siliconflow": {
+        "name": "硅基流动",
+        "base_url": "https://api.siliconflow.cn/v1",
+        "default_model": "deepseek-ai/DeepSeek-V3",
+    },
+    "qwen": {
+        "name": "通义千问",
+        "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "default_model": "qwen-vl-max",
+    },
 }
 
 def Client_creater(config):
+    """从新版模块化配置中创建对话 AI 客户端。"""
+    chat_cfg = config.get("chat", {})
+    provider = chat_cfg.get("provider", "stepfun")
+    api_key = chat_cfg.get("api_keys", {}).get(provider, "")
     return AIClient(
-        config.get("provider", "stepfun"),
-        config.get("api_key", ""),
+        provider,
+        api_key,
         config.get("tavily_api_key", ""),
     )
 
@@ -62,7 +76,8 @@ class AIClient(QNetworkAccessManager):
         self._api_key = api_key
         self._tavily_api_key = tavily_api_key
         self._messages = []
-        self._web_searched = False  
+        self._web_searched = False
+        self._cfg_override_model = None
 
     @property
     def _cfg(self):
@@ -71,10 +86,11 @@ class AIClient(QNetworkAccessManager):
     def set_system_prompt(self, prompt):
         self._messages = [{"role": "system", "content": prompt}]
 
-    def update(self, provider, api_key, tavily_api_key=""):
+    def update(self, provider, api_key, tavily_api_key="", model=""):
         self._provider = provider
         self._api_key = api_key
         self._tavily_api_key = tavily_api_key
+        self._cfg_override_model = model or None
         self._messages = [self._messages[0]] if self._messages else []
 
     def send_message(self, user_message):
@@ -87,8 +103,9 @@ class AIClient(QNetworkAccessManager):
             self.response_ready.emit("呜...还没设置 API Key 呢！去设置里填一下啦笨蛋~")
             return
 
+        model = self._cfg_override_model or self._cfg["default_model"]
         body = {
-            "model": self._cfg["default_model"],
+            "model": model,
             "messages": self._messages,
             "temperature": 1,
             "stream": False
