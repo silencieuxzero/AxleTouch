@@ -63,7 +63,7 @@ AxleTouch 探索版（AxleTouch Explorer Edition）是基于 **PyQt5** 开发的
 
 ## 🛠️ 环境要求
 
-- **操作系统**：Windows 7/10/11
+- **操作系统**：Windows 10/11
 - **Python**：>= 3.8（推荐 3.10+）
 - **包管理器**：[uv](https://docs.astral.sh/uv/)（推荐）或 pip
 - **依赖库**：
@@ -77,9 +77,9 @@ AxleTouch 探索版（AxleTouch Explorer Edition）是基于 **PyQt5** 开发的
 
 ### 方式一：快速体验（EXE）
 
-直接下载 [Releases 页面](https://github.com/baizhou830/AxleTouch/releases) 中的 `AxleTouch.zip`，解压后双击 `AxleTouch.exe` 即可运行。
+直接下载 [Releases 页面](https://github.com/baizhou830/AxleTouch/releases) 中的 `AxleTouch.exe`，双击即可运行。
 
-如需本地重新打包，可下载对应 release 中的 `build.py` 执行打包。
+如需本地重新打包，可根据 [打包指南](#📦-打包指南) 进行操作。
 
 ---
 
@@ -87,14 +87,14 @@ AxleTouch 探索版（AxleTouch Explorer Edition）是基于 **PyQt5** 开发的
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/baizhou830/AxleTouch.git
+git clone https://github.com/silencieuxzero/AxleTouch.git
 cd AxleTouch
 
 # 2. 同步依赖（如遇 SSL 证书错误，加 --system-certs）
-uv sync --system-certs
+uv sync
 
 # 3. 运行
-uv run axle-touch
+uv run python main.py
 ```
 
 > 首次启动会自动生成 `config.json` 配置文件。右键桌宠 → “设置”，选择厂商并填入对应的 API Key 即可开始对话。
@@ -139,13 +139,13 @@ pip install pyinstaller
 1. **确认所有依赖已安装**：
 
    ```bash
-   uv sync --system-certs
+   uv sync
    ```
 
 2. **确保代码可正常运行**：
 
    ```bash
-   uv run axle-touch
+   uv run python main.py
    ```
 
 3. **检查资源文件完整性**：确认 `assets/` 目录下存在 `icon.ico`、`image.svg`、`image1.jpg`。
@@ -591,8 +591,8 @@ AxleTouch/
 
 ## 📬 联系方式
 
-- **GitHub 仓库**：[baizhou830/AxleTouch](https://github.com/baizhou830/AxleTouch)
-- **问题反馈**：[Issues](https://github.com/baizhou830/AxleTouch/issues)
+- **GitHub 仓库**：[silencieuxzero/AxleTouch](https://github.com/silencieuxzero/AxleTouch)
+- **问题反馈**：[Issues](https://github.com/silencieuxzero/AxleTouch/issues)
 
 ---
 
