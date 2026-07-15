@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                               QCheckBox, QDoubleSpinBox, QShortcut,
                               QGroupBox, QMessageBox, QGraphicsOpacityEffect,
                               QTabWidget)
-from PyQt5.QtCore import (Qt, QPoint, QRectF, QPropertyAnimation,
+from PyQt5.QtCore import (Qt, QPoint, QRect, QRectF, QPropertyAnimation,
                            QEasingCurve, QTimer, pyqtSignal, QElapsedTimer,
                            QBuffer, QEvent, QAbstractAnimation)
 from PyQt5.QtGui import (QPainter, QBrush, QColor, QPen, QPainterPath,
